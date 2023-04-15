@@ -112,6 +112,19 @@ async def get_path_size(path):
     return total_size
 
 
+async def get_path_max_file_size(path):
+    if await aiopath.isfile(path):
+        return await aiopath.getsize(path)
+    max_size = 0
+    for root, dirs, files in await sync_to_async(walk, path):
+        for f in files:
+            abs_path = ospath.join(root, f)
+            total_size = await aiopath.getsize(abs_path)
+            if total_size >= 2 * 1024**3 or total_size > max_size:
+                max_size = total_size
+    return max_size
+
+
 async def count_files_and_folders(path):
     total_files = 0
     total_folders = 0

@@ -13,7 +13,7 @@ from natsort import natsorted
 from aioshutil import copy
 
 from bot import config_dict, user_data, GLOBAL_EXTENSION_FILTER, bot, user, IS_PREMIUM_USER
-from bot.helper.ext_utils.fs_utils import clean_unwanted, is_archive, get_base_name
+from bot.helper.ext_utils.fs_utils import clean_unwanted, is_archive, get_base_name, get_path_max_file_size
 from bot.helper.ext_utils.bot_utils import sync_to_async
 from bot.helper.ext_utils.leech_utils import get_media_info, get_document_type, take_ss
 
@@ -63,7 +63,8 @@ class TgUploader:
         if DUMP_CHAT := config_dict['DUMP_CHAT']:
             msg = self.__listener.message.link if self.__listener.isSuperGroup else self.__listener.message.text
             msg = msg.split('/')[-1]
-            f_size = await aiopath.getsize(self.__path)
+            f_size = await get_path_max_file_size(self.__path)
+            LOGGER.info(f'Sending message for reply. File size {f_size}')
             if IS_PREMIUM_USER and f_size >= 2 * 1024**3:
                 LOGGER.info('Going to upload file as a user')
                 self.__sent_msg = await user.send_message(chat_id=DUMP_CHAT, text=msg,
