@@ -205,13 +205,14 @@ async def rssUpdate(client, message, pre_event, state):
 async def rssList(query, start, all_users=False):
     user_id = query.from_user.id
     buttons = ButtonMaker()
+    paggination = 2
     if all_users:
-        list_feed = f"<b>All subscriptions | Page: {int(start/5)} </b>"
+        list_feed = f"<b>All subscriptions | Page: {int(start/paggination)} </b>"
         async with rss_dict_lock:
             keysCount = sum(len(v.keys()) for v in list(rss_dict.values()))
             index = 0
             for titles in list(rss_dict.values()):
-                for index, (title, data) in enumerate(list(titles.items())[start:5+start]):
+                for index, (title, data) in enumerate(list(titles.items())[start:paggination+start]):
                     list_feed += f"\n\n<b>Title:</b> <code>{title}</code>\n"
                     list_feed += f"<b>Feed Url:</b> <code>{data['link']}</code>\n"
                     list_feed += f"<b>Command:</b> <code>{data['command']}</code>\n"
@@ -221,13 +222,13 @@ async def rssList(query, start, all_users=False):
                     list_feed += f"<b>Options:</b> <code>{data['options']}</code>\n"
                     list_feed += f"<b>User:</b> {data['tag'].lstrip('@')}"
                     index += 1
-                    if index == 5:
+                    if index == paggination:
                         break
     else:
-        list_feed = f"<b>Your subscriptions | Page: {int(start/5)} </b>"
+        list_feed = f"<b>Your subscriptions | Page: {int(start/paggination)} </b>"
         async with rss_dict_lock:
             keysCount = len(rss_dict.get(user_id, {}).keys())
-            for title, data in list(rss_dict[user_id].items())[start:5+start]:
+            for title, data in list(rss_dict[user_id].items())[start:paggination+start]:
                 list_feed += f"\n\n<b>Title:</b> <code>{title}</code>\n<b>Feed Url: </b><code>{data['link']}</code>\n"
                 list_feed += f"<b>Command:</b> <code>{data['command']}</code>\n"
                 list_feed += f"<b>Inf:</b> <code>{data['inf']}</code>\n"
@@ -236,10 +237,10 @@ async def rssList(query, start, all_users=False):
                 list_feed += f"<b>Options:</b> <code>{data['options']}</code>"
     buttons.ibutton("Back", f"rss back {user_id}")
     buttons.ibutton("Close", f"rss close {user_id}")
-    if keysCount > 5:
-        for x in range(0, keysCount, 5):
+    if keysCount > paggination:
+        for x in range(0, keysCount, paggination):
             buttons.ibutton(
-                f'{int(x/5)}', f"rss list {user_id} {x}", position='footer')
+                f'{int(x/paggination)}', f"rss list {user_id} {x}", position='footer')
     button = buttons.build_menu(2)
     if query.message.text.html == list_feed:
         return
@@ -617,11 +618,9 @@ async def rssMonitor():
                     command_msg = ''
                     if command := data['command']:
                         options = opt if (opt := data['options']) else ''
-                        feed_msg = f"/{command.replace('/', '')} {url} {options}"
-                        command_msg = feed_msg
-                    else:
-                        feed_msg = f"<b>Name: </b><code>{item_title.replace('>', '').replace('<', '')}</code>\n\n"
-                        feed_msg += f"<b>Link: </b><code>{url}</code>"
+                        command_msg = f"/{command.replace('/', '')} {url} {options}"
+                    feed_msg = f"<b>Name: </b><code>{item_title.replace('>', '').replace('<', '')}</code>\n\n"
+                    feed_msg += f"<b>Link: </b><code>{url}</code>"
                     feed_msg += f"\n<b>Tag: </b><code>{data['tag']}</code> <code>{user}</code>"
                     await sendRss(feed_msg)
                     LOGGER.info('RSS Auto Command: {} and command message: {}'.format(config_dict.get('RSS_AUTO_COMMAND'), command_msg))
