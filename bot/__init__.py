@@ -176,7 +176,9 @@ if len(USER_SESSION_STRING) != 0:
     log_info("Creating client from USER_SESSION_STRING")
     user = tgClient('user', TELEGRAM_API, TELEGRAM_HASH, session_string=USER_SESSION_STRING,
                     parse_mode=enums.ParseMode.HTML, no_updates=True, max_concurrent_transmissions=1000).start()
+    LOGGER.info(user)
     IS_PREMIUM_USER = user.me.is_premium
+    LOGGER.info(f'User is premium: {IS_PREMIUM_USER}')
 
 MEGA_API_KEY = environ.get('MEGA_API_KEY', '')
 if len(MEGA_API_KEY) == 0:

@@ -65,9 +65,11 @@ class TgUploader:
             msg = msg.split('/')[-1]
             f_size = await aiopath.getsize(self.__path)
             if IS_PREMIUM_USER and f_size >= 2 * 1024**3:
+                LOGGER.info('Going to upload file as a user')
                 self.__sent_msg = await user.send_message(chat_id=DUMP_CHAT, text=msg,
                                                           disable_web_page_preview=False, disable_notification=True)
             else:
+                LOGGER.info('Going to upload file as a bot')
                 self.__sent_msg = await bot.send_message(chat_id=DUMP_CHAT, text=msg,
                                                          disable_web_page_preview=False, disable_notification=True)
         elif IS_PREMIUM_USER:
