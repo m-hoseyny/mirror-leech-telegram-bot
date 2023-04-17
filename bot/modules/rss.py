@@ -8,13 +8,14 @@ from time import time
 from functools import partial
 from aiohttp import ClientSession
 from apscheduler.triggers.interval import IntervalTrigger
-from re import split as re_split
+from re import split as re_split, sub
 
 from bot import scheduler, rss_dict, LOGGER, DATABASE_URL, config_dict, bot, bot_name
 from bot.helper.telegram_helper.message_utils import sendMessage, editMessage, sendRss, sendRssAutoCommand
 from bot.helper.telegram_helper.filters import CustomFilters
 from bot.helper.telegram_helper.bot_commands import BotCommands
 from bot.helper.ext_utils.db_handler import DbManger
+from bot.helper.ext_utils.file_handler import FileHandler
 from bot.helper.telegram_helper.button_build import ButtonMaker
 from bot.helper.ext_utils.bot_utils import new_thread
 from bot.helper.ext_utils.exceptions import RssShutdownException
@@ -23,7 +24,21 @@ from bot.helper.ext_utils.help_messages import RSS_HELP_MESSAGE
 rss_dict_lock = Lock()
 handler_dict = {}
 
-BLOCKED_CATEGORIES = ['music', 'xxx', 'book', 'other']
+BLOCKED_CATEGORIES = ['music', 'xxx', 'book', 'other', 'pack']
+
+send_rss_file_name = FileHandler('static_data/rss_name.db')
+
+def clean_name(name):
+    res = sub(r'[^\w\s]', ' ', name)
+    res = res.lower()
+    return res
+
+def clean_title(title):
+    removed = ['[TGx]', '[rartv]', 'eztv.re', 'GalaxyTV']
+    for r in removed:
+        title = title.replace(r, '')
+    title = clean_name(title)
+    return title
 
 
 async def rssMenu(event):
@@ -620,6 +635,15 @@ async def rssMonitor():
                         parse = False
                         feed_count += 1
                         continue
+                    try:
+                        if item_title in send_rss_file_name.set or clean_title(item_title) in send_rss_file_name.set:
+                            # LOGGER.warning('Added before [{}]'.format(rss_d.entries[feed_count]['title']))
+                            feed_count += 1
+                            parse = False
+                        else:
+                            send_rss_file_name.append(clean_title(item_title))
+                    except Exception as e:
+                        LOGGER.error(f'Error in parsing name: {e}')
                     if not parse:
                         continue
                     command_msg = ''
