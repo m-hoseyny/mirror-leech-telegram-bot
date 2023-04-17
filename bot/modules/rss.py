@@ -630,20 +630,20 @@ async def rssMonitor():
                             parse = False
                             feed_count += 1
                             break
-                    LOGGER.info("Going to check blackList Category")
                     if rss_d.entries[feed_count].get('category') and any(x in str(rss_d.entries[feed_count]['category']).lower() for x in BLOCKED_CATEGORIES):
+                        LOGGER.info(f"This is balck list {item_title}")
                         parse = False
                         feed_count += 1
                         continue
-                    try:
-                        if item_title in send_rss_file_name.set or clean_title(item_title) in send_rss_file_name.set:
-                            LOGGER.warning('Added before [{}]'.format(rss_d.entries[feed_count]['title']))
-                            feed_count += 1
-                            parse = False
-                        else:
-                            send_rss_file_name.append(clean_title(item_title))
-                    except Exception as e:
-                        LOGGER.error(f'Error in parsing name: {e}')
+                    # try:
+                    #     if item_title in send_rss_file_name.set or clean_title(item_title) in send_rss_file_name.set:
+                    #         LOGGER.warning('Added before [{}]'.format(rss_d.entries[feed_count]['title']))
+                    #         feed_count += 1
+                    #         parse = False
+                    #     else:
+                    #         send_rss_file_name.append(clean_title(item_title))
+                    # except Exception as e:
+                    #     LOGGER.error(f'Error in parsing name: {e}')
                     if not parse:
                         continue
                     command_msg = ''
