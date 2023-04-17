@@ -630,14 +630,14 @@ async def rssMonitor():
                             parse = False
                             feed_count += 1
                             break
-                    # LOGGER.info("Going to check blackList Category")
+                    LOGGER.info("Going to check blackList Category")
                     if rss_d.entries[feed_count].get('category') and any(x in str(rss_d.entries[feed_count]['category']).lower() for x in BLOCKED_CATEGORIES):
                         parse = False
                         feed_count += 1
                         continue
                     try:
                         if item_title in send_rss_file_name.set or clean_title(item_title) in send_rss_file_name.set:
-                            # LOGGER.warning('Added before [{}]'.format(rss_d.entries[feed_count]['title']))
+                            LOGGER.warning('Added before [{}]'.format(rss_d.entries[feed_count]['title']))
                             feed_count += 1
                             parse = False
                         else:
@@ -652,9 +652,9 @@ async def rssMonitor():
                         command_msg = f"/{command.replace('/', '')} {url} {options}"
                     feed_msg = f"<b>Name: </b><code>{item_title.replace('>', '').replace('<', '')}</code>\n\n"
                     feed_msg += f"<b>Link: </b><code>{url}</code>"
-                    feed_msg += f"\n<b>Tag: </b><code>{data['tag']}</code> <code>{user}</code>"
+                    feed_msg += f"\n<b>Tag: </b><code>{data['tag']} -> {title}</code> <code>{user}</code>"
                     await sendRss(feed_msg)
-                    # LOGGER.info('RSS Auto Command: {} and command message: {}'.format(config_dict.get('RSS_AUTO_COMMAND'), command_msg))
+                    LOGGER.info('RSS Auto Command: {} and command message: {}'.format(config_dict.get('RSS_AUTO_COMMAND'), command_msg))
                     if config_dict.get('RSS_AUTO_COMMAND') and command_msg:
                         LOGGER.info(f"Going to check AUTO command: RSS command: {command_msg} title: {title}")
                         await sendRssAutoCommand(command_msg)
