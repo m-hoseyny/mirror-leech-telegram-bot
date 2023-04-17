@@ -23,6 +23,8 @@ from bot.helper.ext_utils.help_messages import RSS_HELP_MESSAGE
 rss_dict_lock = Lock()
 handler_dict = {}
 
+BLOCKED_CATEGORIES = ['music', 'xxx', 'book', 'other']
+
 
 async def rssMenu(event):
     user_id = event.from_user.id
@@ -613,6 +615,11 @@ async def rssMonitor():
                             parse = False
                             feed_count += 1
                             break
+                    # LOGGER.info("Going to check blackList Category")
+                    if rss_d.entries[feed_count].get('category') and any(x in str(rss_d.entries[feed_count]['category']).lower() for x in BLOCKED_CATEGORIES):
+                        parse = False
+                        feed_count += 1
+                        continue
                     if not parse:
                         continue
                     command_msg = ''
@@ -623,7 +630,7 @@ async def rssMonitor():
                     feed_msg += f"<b>Link: </b><code>{url}</code>"
                     feed_msg += f"\n<b>Tag: </b><code>{data['tag']}</code> <code>{user}</code>"
                     await sendRss(feed_msg)
-                    LOGGER.info('RSS Auto Command: {} and command message: {}'.format(config_dict.get('RSS_AUTO_COMMAND'), command_msg))
+                    # LOGGER.info('RSS Auto Command: {} and command message: {}'.format(config_dict.get('RSS_AUTO_COMMAND'), command_msg))
                     if config_dict.get('RSS_AUTO_COMMAND') and command_msg:
                         LOGGER.info(f"Going to check AUTO command: RSS command: {command_msg} title: {title}")
                         await sendRssAutoCommand(command_msg)
