@@ -3,9 +3,11 @@ version: "3.3"
 services:
   app:
     build: .
-    container_name: mirrorbot
+    container_name: gemaio
     command: bash start.sh
     restart: on-failure
     ports:
       - 80
       - 8080
+    volumes:
+      - ./static_data:/usr/src/app/static_data
