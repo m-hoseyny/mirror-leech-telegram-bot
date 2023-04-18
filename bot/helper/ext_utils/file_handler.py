@@ -2,7 +2,7 @@ class FileHandler:
     def __init__(self, fname, verbose=True):
         self.fname = fname
         self.verbose = verbose
-        self.threshold = 2000
+        self.threshold = 5000
         open(self.fname, 'a').close()
 
     @property

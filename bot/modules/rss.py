@@ -635,15 +635,17 @@ async def rssMonitor():
                         parse = False
                         feed_count += 1
                         continue
-                    # try:
-                    #     if item_title in send_rss_file_name.set or clean_title(item_title) in send_rss_file_name.set:
-                    #         LOGGER.warning('Added before [{}]'.format(rss_d.entries[feed_count]['title']))
-                    #         feed_count += 1
-                    #         parse = False
-                    #     else:
-                    #         send_rss_file_name.append(clean_title(item_title))
-                    # except Exception as e:
-                    #     LOGGER.error(f'Error in parsing name: {e}')
+                    try:
+                        LOGGER.warning('Cecking for duplication [{}]'.format(rss_d.entries[feed_count]['title']))
+                        if item_title in send_rss_file_name.set or clean_title(item_title) in send_rss_file_name.set:
+                            LOGGER.warning('Added before [{}]'.format(rss_d.entries[feed_count]['title']))
+                            feed_count += 1
+                            parse = False
+                        else:
+                            send_rss_file_name.append(clean_title(item_title))
+                    except Exception as e:
+                        LOGGER.error(f'Error in parsing name: {e}')
+                    LOGGER.warning('Parsing {} -> [{}]'.format(rss_d.entries[feed_count]['title'], parse))
                     if not parse:
                         continue
                     command_msg = ''
