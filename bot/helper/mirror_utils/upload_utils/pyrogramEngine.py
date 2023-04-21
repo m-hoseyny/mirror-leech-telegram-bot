@@ -155,14 +155,17 @@ class TgUploader:
     async def upload(self, o_files, m_size, size):
         await self.__msg_to_reply()
         await self.__user_settings()
+        LOGGER.info(f'User settings has been capture size: {size}')
         for dirpath, _, files in sorted(await sync_to_async(walk, self.__path)):
             for file_ in natsorted(files):
+                LOGGER.info(f'Going to upload {file_}')
                 self.__up_path = ospath.join(dirpath, file_)
                 if file_.lower().endswith(tuple(GLOBAL_EXTENSION_FILTER)):
                     await aioremove(self.__up_path)
                     continue
                 try:
                     f_size = await aiopath.getsize(self.__up_path)
+                    LOGGER.info(f'File size to upliad in def upload {f_size}')
                     if self.__listener.seed and file_ in o_files and f_size in m_size:
                         continue
                     self.__total_files += 1
@@ -184,6 +187,7 @@ class TgUploader:
                                         await self.__send_media_group(subkey, key, msgs)
                     self.__last_msg_in_group = False
                     self._last_uploaded = 0
+                    LOGGER.info(f'uploading __upload {cap_mono}')
                     await self.__upload_file(cap_mono)
                     if self.__is_cancelled:
                         return
