@@ -16,9 +16,10 @@ from bot import config_dict, user_data, GLOBAL_EXTENSION_FILTER, bot, user, IS_P
 from bot.helper.ext_utils.fs_utils import clean_unwanted, is_archive, get_base_name, get_path_max_file_size
 from bot.helper.ext_utils.bot_utils import sync_to_async
 from bot.helper.ext_utils.leech_utils import get_media_info, get_document_type, take_ss
+from bot.helper.telegram_helper.message_utils import sendRss
 
 LOGGER = getLogger(__name__)
-getLogger("pyrogram").setLevel(ERROR)
+getLogger("pyrogram").setLevel(Warning)
 
 
 class TgUploader:
@@ -193,16 +194,23 @@ class TgUploader:
                     if isinstance(err, RetryError):
                         LOGGER.info(
                             f"Total Attempts: {err.last_attempt.attempt_number}")
+                        sendRss(f'Attemps for uploading file [{err.last_attempt.attempt_number}], [{self.__path}]')
                     else:
                         LOGGER.error(f"{err}. Path: {self.__up_path}")
+                        sendRss(f'Error in uploading {err}. Path: {self.__up_path}')
                     if self.__is_cancelled:
                         return
                     continue
                 finally:
+                    LOGGER.info(f"Finally uploading file [{self.__up_path}]")
                     if not self.__is_cancelled and await aiopath.exists(self.__up_path) and \
                         (not self.__listener.seed or self.__listener.newDir or
                          dirpath.endswith("splited_files_mltb") or '/copied_mltb/' in self.__up_path):
+                        LOGGER.info(f"Finally Clean Up [{self.__up_path}]")
                         await aioremove(self.__up_path)
+                    else:
+                        LOGGER.error(f"There is something wrong! File did not remove from server Path: {self.__up_path}")
+                        sendRss(f'There is something wrong! File did not remove from server Path: {self.__up_path} is_canceled: {self.__is_cancelled}, seed {self.__listener.seed}, newDir: {self.__listener.newDir}')
         for key, value in list(self.__media_dict.items()):
             for subkey, msgs in list(value.items()):
                 if len(msgs) > 1:
